@@ -1,39 +1,4 @@
-import { useState } from 'react';
-import supabase from '../lib/supabaseClient';
-
-export default function Login() {
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-
-    const { error } = await supabase.auth.signIn(
-      { email },
-      { redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard` }
-    );
-
-    if (error) {
-      setMessage(error.message);
-    } else {
-      setMessage('Check your email for the login link!');
-    }
-  };
-
-  return (
-    <div>
-      <h1>Login</h1>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <button type="submit">Send Magic Link</button>
-      </form>
-      <p>{message}</p>
-    </div>
-  );
-}
+import { useState } from 'react'; import { supabase } from '../lib/supabaseClient';
+export default function Login() { const [email,setEmail]=useState(''); const [sent,setSent]=useState(false);
+  const handleLogin = async (e)=>{ e.preventDefault(); const redirectTo = (process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '')) + '/dashboard'; const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } }); if (!error) setSent(true); else alert(error.message); };
+  return (<div className="flex items-center justify-center min-h-screen"><form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-lg w-[420px]"><h1 className="text-xl font-bold mb-4">Login / Sign up</h1>{!sent ? (<><input required type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="you@college.edu" className="border p-2 w-full rounded mb-3" /><button className="bg-blue-600 text-white px-4 py-2 rounded">Send Magic Link</button></>) : (<p>Check your email for a login link.</p>)}</form></div>); }
