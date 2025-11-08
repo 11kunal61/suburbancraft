@@ -1,11 +1,38 @@
-import React from 'react'; import { supabase } from '../lib/supabaseClient'; import Nav from '../components/Nav'; import PromptForm from '../components/PromptForm'; import TemplateRenderer from '../components/TemplateRenderer';
-export default function Dashboard(){ const [user,setUser]=React.useState(null); const [preview,setPreview]=React.useState(null); const [site,setSite]=React.useState(null); React.useEffect(()=>{ supabase.auth.getUser().then(({data})=>setUser(data.user??null)); const { data: authListener } = supabase.auth.onAuthStateChange((event, session)=>{ if(session?.user) setUser(session.user); }); return ()=> authListener?.subscription?.unsubscribe?.(); },[]);
-  React.useEffect(()=>{ if(user) loadSite(); },[user]);
-  async function loadSite(){ const { data } = await supabase.from('sites').select('*').eq('user_id', user.id).limit(1).single().catch(()=>null); if(data){ setSite(data); setPreview({data:data.data, theme: data.theme?.palette||'pastel'}); } }
-  async function handleGenerate(vals){ const payload = { name: vals.name, profession: vals.profession, goal: vals.goal, style: vals.style, projects:[{title:'Demo', summary:'Demo project'}], bio: 'Auto-generated (edit later)', username: vals.username }; setPreview({data:payload, theme: vals.palette}); }
-  async function handleSave(){ if(!user||!preview) return alert('Login & generate preview'); const username = preview.data.username || (user.email||'user').split('@')[0].replace(/[^a-z0-9]/gi,'').toLowerCase().slice(0,20); const payload = { user_id:user.id, username, template:'modern-resume', theme:{palette:preview.theme}, data: preview.data, published:false }; const { data, error } = await supabase.from('sites').upsert(payload).select().single(); if(error) return alert(error.message); setSite(data); alert('Saved'); }
-  async function handlePublish(){ if(!site) return alert('Save first'); const { error } = await supabase.from('sites').update({published:true}).eq('id', site.id); if(error) return alert(error.message); alert('Published! Visit /' + site.username); }
-  if(!user) return (<div><Nav user={null}/><main className='container py-10'><div className='card'><h2>Login / Register</h2><LoginForm onSuccess={(u)=>setUser(u)}/></div></main></div>);
-  return (<div><Nav user={user} onLogout={()=>setUser(null)}/><main className='container py-10 grid gap-6' style={{gridTemplateColumns:'360px 1fr'}}><div className='card'><h3>Create your site</h3><PromptForm onSubmit={handleGenerate} initial={site?.data}/><div className='mt-4 flex gap-2'><button onClick={handleSave} className='px-4 py-2 bg-sky-600 text-white rounded'>Save</button><button onClick={handlePublish} className='px-4 py-2 bg-green-600 text-white rounded'>Publish</button></div></div><div className='card'><h3>Live Preview</h3>{preview? <TemplateRenderer data={preview.data} theme={preview.theme}/> : <div className='p-4'>Generate preview</div>}</div></main></div>); }
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
+import TemplateRenderer from "../components/TemplateRenderer";
 
-function LoginForm({ onSuccess }){ const [email,setEmail]=React.useState(''); const [loading,setLoading]=React.useState(false); async function sendLink(e){ e.preventDefault(); setLoading(true); const { error } = await supabase.auth.signInWithOtp({ email }); setLoading(false); if(error) alert(error.message); else{ alert('Check your email'); onSuccess?.(null); } } return (<form onSubmit={sendLink} className='space-y-2'><input placeholder='you@college.edu' className='w-full p-2 border rounded' value={email} onChange={(e)=>setEmail(e.target.value)}/><button className='px-4 py-2 bg-sky-600 text-white rounded'>{loading?'Sending...':'Send magic link'}</button></form>); }
+export default function Dashboard() {
+  const [site, setSite] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    async function loadUserData() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+
+      if (user) {
+        const { data, error } = await supabase
+          .from("sites")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
+
+        if (!error) setSite(data);
+      }
+    }
+
+    loadUserData();
+  }, []);
+
+  if (!user) return <p>Loading...</p>;
+  if (!site) return <p>No site data found. Create one in your dashboard!</p>;
+
+  return (
+    <div>
+      <TemplateRenderer site={site} />
+    </div>
+  );
+}
