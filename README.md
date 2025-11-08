@@ -1,17 +1,26 @@
-Fixed Krytil for suburbancraft deployment - ready-to-deploy
+Krytil - Resume-powered AI site generator (ready-to-deploy)
 
-IMPORTANT: before deploying to Vercel, set these Environment Variables in your Vercel project settings:
+How to deploy:
+1. Add environment variables in Vercel:
+   NEXT_PUBLIC_SUPABASE_URL
+   NEXT_PUBLIC_SUPABASE_ANON_KEY
+   OPENROUTER_API_KEY (optional but recommended to use OpenRouter Llama models)
+   HUGGINGFACE_API_KEY (optional fallback)
+   NEXT_PUBLIC_BASE_URL=https://suburbancraft.vercel.app
+2. Ensure Supabase table `sites` exists with columns:
+   - id (uuid primary key)
+   - user_id (uuid)
+   - username (text unique)
+   - title (text)
+   - description (text)
+   - color (text)
+   - sections (jsonb) optional
+   - ai_html (text)
+   - created_at (timestamp default now())
+3. In Supabase Auth -> URL Configuration -> add Redirect URL:
+   https://suburbancraft.vercel.app/dashboard
+4. Deploy the ZIP to Vercel, set env vars, and test /login -> email link -> dashboard -> upload resume -> generate -> save -> visit /username
 
-NEXT_PUBLIC_SUPABASE_URL=<your supabase url>
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<your supabase anon key>
-OPENROUTER_API_KEY=<your openrouter key>
-NEXT_PUBLIC_BASE_URL=https://suburbancraft.vercel.app
-
-Why NEXT_PUBLIC_BASE_URL: the login system will pass this as the redirect URL to Supabase
-
-Supabase table `sites` should include columns: id (uuid primary), user_id (uuid), username (text unique), title (text), description (text), color (text), sections (jsonb), ai_html (text), created_at (timestamp default now())
-
-Deploy: upload this zip to Vercel, set env vars, and deploy. Then go to Supabase Auth > URL Configuration and add the redirect URL:
-
-https://suburbancraft.vercel.app/dashboard
-
+Notes:
+- This version extracts text from PDF/DOCX server-side using pdf-parse and mammoth. Keep an eye on function cold-start time and upload size limits.
+- Consider adding server-side HTML sanitization before saving to DB (I can add this next).

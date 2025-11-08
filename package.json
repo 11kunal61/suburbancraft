@@ -1,5 +1,5 @@
 {
-  "name": "krytil-suburbancraft-fixed",
+  "name": "krytil-resume-ai",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -9,10 +9,13 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.43.3",
+    "formidable": "^3.6.4",
+    "mammoth": "^1.4.21",
+    "pdf-parse": "^1.1.1",
     "next": "14.1.0",
+    "node-fetch": "^3.3.2",
     "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "node-fetch": "^3.3.2"
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.17",
