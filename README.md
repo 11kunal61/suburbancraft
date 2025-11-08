@@ -1,8 +1,9 @@
-Krytil - Finished core starter
+Krytil - Ready to deploy (login-first)
 
-Quick notes:
-- Add environment variables in Vercel: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, optionally OPENAI_API_KEY
-- Create Supabase tables: sites (id,user_id,username,template,theme,data,published) and projects
-- Deploy to Vercel or use GitHub integration
-
-This build focuses on core mechanics: auth, prompt form, preview, save/publish, public username route.
+Quick steps:
+1. Add these environment variables in Vercel:
+   NEXT_PUBLIC_SUPABASE_URL
+   NEXT_PUBLIC_SUPABASE_ANON_KEY
+2. Ensure Supabase table `sites` exists with columns: id (uuid), user_id (uuid), username (text), title (text), description (text), color (text), sections (jsonb), created_at (timestamp)
+3. Deploy on Vercel (or push to GitHub and connect Vercel).
+4. Visit /login to start.

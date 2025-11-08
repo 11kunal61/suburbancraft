@@ -1,2 +1,16 @@
-import Link from 'next/link'; import Nav from '../components/Nav';
-export default function Home(){ return (<div><Nav user={null}/><main className='container py-12'><div className='card'><h1 className='text-2xl font-bold'>Krytil — Prompt→Site Builder</h1><p className='mt-2'>Create a simple public site from prompts. Go to Dashboard to start.</p><div className='mt-4'><Link href='/dashboard'><a className='px-4 py-2 bg-sky-600 text-white rounded'>Dashboard</a></Link></div></div></main></div>); }
+import { useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
+import { useRouter } from 'next/router';
+
+export default function Home() {
+  const router = useRouter();
+  useEffect(() => {
+    async function check() {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) router.push('/dashboard');
+      else router.push('/login');
+    }
+    check();
+  }, [router]);
+  return <p>Loading...</p>
+}

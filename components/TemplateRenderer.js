@@ -1,31 +1,26 @@
-import React from "react";
-
 export default function TemplateRenderer({ site }) {
-  if (!site) return <p>No site data found.</p>;
-
+  if (!site) return <div className="p-6">No site to show.</div>;
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
-      <header className="bg-white shadow p-6 text-center">
-        <h1 className="text-3xl font-bold">{site.title || "Untitled Site"}</h1>
-        <p className="text-gray-500">{site.description || "No description yet"}</p>
+    <div className="min-h-screen text-white" style={{ backgroundColor: site.color || '#2563eb' }}>
+      <header className="text-center py-8 bg-black bg-opacity-20">
+        <h1 className="text-4xl font-bold">{site.title}</h1>
+        <p className="text-lg mt-2">{site.description}</p>
       </header>
 
-      <main className="p-8 space-y-6">
+      <main className="p-6 space-y-6">
         {site.sections && site.sections.length > 0 ? (
-          site.sections.map((section, index) => (
-            <section key={index} className="bg-white p-6 rounded-xl shadow">
-              <h2 className="text-xl font-semibold mb-2">{section.heading}</h2>
-              <p>{section.content}</p>
+          site.sections.map((s, i) => (
+            <section key={i} className="bg-white text-black p-6 rounded-lg shadow">
+              <h2 className="text-2xl font-semibold">{s.heading}</h2>
+              <p className="mt-2">{s.content}</p>
             </section>
           ))
         ) : (
-          <p>No sections added yet.</p>
+          <div className="p-6 bg-white rounded-lg shadow">No sections yet.</div>
         )}
       </main>
 
-      <footer className="text-center py-4 text-sm text-gray-500">
-        Built with ❤️ using Krytil
-      </footer>
+      <footer className="text-center text-sm py-4 bg-black bg-opacity-20">Built with ❤️ by Krytil</footer>
     </div>
   );
 }

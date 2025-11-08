@@ -1,5 +1,5 @@
 {
-  "name": "krytil-finished-core",
+  "name": "krytil-ready",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -12,8 +12,7 @@
     "next": "14.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "node-fetch": "^3.3.2",
-    "archiver": "^5.3.1"
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.17",
