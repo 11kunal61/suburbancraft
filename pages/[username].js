@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import TemplateRenderer from '../components/TemplateRenderer';
 
 export default function UserSite() {
   const router = useRouter();
@@ -21,5 +20,6 @@ export default function UserSite() {
 
   if (loading) return <p>Loading site...</p>;
   if (!site) return <p>Site not found.</p>;
-  return <TemplateRenderer site={site} />;
+
+  return <div dangerouslySetInnerHTML={{ __html: site.ai_html || '<p>No content</p>' }} />;
 }
