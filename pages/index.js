@@ -1,20 +1,17 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
-      <h1 className="text-4xl font-bold mb-4">🚀 SuburbanCraft + Supabase</h1>
-      <p className="text-lg">
-        Connection status: {supabase ? "✅ Connected to Supabase" : "❌ Not Connected"}
-      </p>
-      <p className="mt-4 opacity-70 text-sm">
-        Production-ready build deployed on Vercel
-      </p>
-    </div>
-  )
+    <main className="container py-12">
+      <div className="card">
+        <h1 className="text-3xl font-bold">Krytil — Personal Website Builder (MVP)</h1>
+        <p className="mt-2">Create a portfolio/resume website from prompts, host it, and share.</p>
+
+        <div className="mt-6 flex gap-4">
+          <Link href="/dashboard"><a className="px-4 py-2 bg-sky-600 text-white rounded">Open Dashboard</a></Link>
+          <a className="px-4 py-2 bg-gray-200 rounded" href="https://supabase.com">Supabase</a>
+        </div>
+      </div>
+    </main>
+  );
 }
