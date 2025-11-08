@@ -1,5 +1,4 @@
 import { supabase } from '../../lib/supabaseClient';
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
   const { user_id, username, title, description, color, ai_html } = req.body;

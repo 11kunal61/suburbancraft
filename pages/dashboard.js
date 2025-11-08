@@ -9,11 +9,10 @@ export default function Dashboard() {
   const [aiHtml, setAiHtml] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // prompt options
   const [category, setCategory] = useState('portfolio');
   const [palette, setPalette] = useState('pastel');
   const [style, setStyle] = useState('modern');
-  const [extra, setExtra] = useState(''); // extra prompt text
+  const [extra, setExtra] = useState('');
 
   useEffect(() => {
     async function load() {
@@ -45,7 +44,6 @@ export default function Dashboard() {
   async function handleSave() {
     if (!user) return alert('Login required');
     setSaving(true);
-    // save AI HTML and metadata to Supabase
     const payload = {
       user_id: user.id,
       username: user.email.split('@')[0],

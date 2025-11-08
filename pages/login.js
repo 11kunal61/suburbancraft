@@ -7,7 +7,8 @@ export default function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const redirectTo = (process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '')) + '/dashboard';
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
     if (!error) setSent(true);
     else alert(error.message);
   };
@@ -22,7 +23,7 @@ export default function Login() {
             <button className="bg-blue-600 text-white px-4 py-2 rounded">Send Magic Link</button>
           </>
         ) : (
-          <p>Check your email for a login link.</p>
+          <p>Check your email for a login link. If the link gives 404, make sure NEXT_PUBLIC_BASE_URL is set to your deployed URL in Vercel.</p>
         )}
       </form>
     </div>
