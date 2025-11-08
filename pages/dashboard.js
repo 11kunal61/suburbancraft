@@ -1,107 +1,138 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import TemplateRenderer from '../components/TemplateRenderer';
+// pages/dashboard.js
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
+import TemplateRenderer from "../components/TemplateRenderer";
+import { useRouter } from "next/router";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [site, setSite] = useState(null);
-  const [aiHtml, setAiHtml] = useState('');
+  const [aiHtml, setAiHtml] = useState("");
   const [saving, setSaving] = useState(false);
+  const [loadingSession, setLoadingSession] = useState(true);
+  const router = useRouter();
 
-  const [category, setCategory] = useState('portfolio');
-  const [palette, setPalette] = useState('pastel');
-  const [style, setStyle] = useState('modern');
-  const [extra, setExtra] = useState('');
+  // prompt options (instant UI)
+  const [category, setCategory] = useState("portfolio");
+  const [palette, setPalette] = useState("pastel");
+  const [style, setStyle] = useState("modern");
+  const [extra, setExtra] = useState("");
 
   useEffect(() => {
-    async function load() {
-      const { data } = await supabase.auth.getUser();
-      const u = data?.user;
-      setUser(u || null);
-      if (u) {
-        const { data: s } = await supabase.from('sites').select('*').eq('user_id', u.id).single().catch(()=>({}));
+    // background check for session; UI is instant
+    async function check() {
+      try {
+        const { data } = await supabase.auth.getUser();
+        const u = data?.user ?? null;
+        setUser(u);
+        if (!u) {
+          // not logged in — redirect to login immediately
+          router.replace("/login");
+          return;
+        }
+        // fetch site if exists
+        const { data: s } = await supabase.from("sites").select("*").eq("user_id", u.id).single().catch(()=>null);
         if (s) setSite(s);
+      } catch (err) {
+        console.error("session error:", err);
+      } finally {
+        setLoadingSession(false);
       }
-      setLoading(false);
     }
-    load();
-  }, []);
+    check();
+
+    // listen for auth state changes (keeps UI synced)
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) setUser(session.user);
+      else setUser(null);
+    });
+    return () => sub?.subscription?.unsubscribe?.();
+  }, [router]);
 
   function buildFinalPrompt() {
-    const paletteText = palette === 'pastel' ? 'soft pastel colors' : palette === 'dark' ? 'dark theme with neon accents' : 'vibrant colors';
-    return `Create a ${style} ${category} website with ${paletteText}. Include a header with name/title, an about section, projects (3 items), and a contact section. Tone: professional. Details: ${extra}`;
+    const paletteText = palette === "pastel" ? "soft pastel colors" : palette === "dark" ? "dark theme with neon accents" : "vibrant colors";
+    return `Create a ${style} ${category} website with ${paletteText}. Include header with name/title, an about section, three project items, and contact. Tone: professional. Details: ${extra}`;
   }
 
   async function handleGenerate() {
-    setAiHtml('');
+    setAiHtml("");
     const prompt = buildFinalPrompt();
-    const res = await fetch('/api/generateSite', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ prompt }) });
+    const res = await fetch("/api/generateSite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
     const data = await res.json();
-    setAiHtml(data.content || '<p>Error generating</p>');
+    setAiHtml(data.content || "<p>Error generating</p>");
   }
 
   async function handleSave() {
-    if (!user) return alert('Login required');
+    if (!user) return alert("Login required");
     setSaving(true);
     const payload = {
       user_id: user.id,
-      username: user.email.split('@')[0],
-      title: `${user.email.split('@')[0]}'s site`,
+      username: (user.email || "user").split("@")[0],
+      title: `${(user.email || "user").split("@")[0]}'s site`,
       description: `Generated ${category} site`,
       color: palette,
       sections: [],
-      ai_html: aiHtml
+      ai_html: aiHtml,
     };
-    const { data, error } = await supabase.from('sites').upsert(payload).select().single();
+    const { error } = await supabase.from("sites").upsert(payload).select().single();
     setSaving(false);
     if (error) return alert(error.message);
-    setSite(data);
-    alert('Saved! Visit /' + data.username);
+    alert("Saved! Visit /" + payload.username);
   }
 
-  if (loading) return <p>Loading...</p>;
-
+  // instant UI: show dashboard while session check runs
   return (
     <div className="container py-8">
       <div className="card mb-6">
         <h2 className="text-xl font-semibold">Generate a site from prompts</h2>
+
         <div className="mt-3 grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm">Category</label>
-            <select value={category} onChange={(e)=>setCategory(e.target.value)} className="mt-1 p-2 border w-full rounded">
+            <select value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 p-2 border w-full rounded">
               <option value="portfolio">Portfolio</option>
               <option value="resume">Resume</option>
               <option value="startup">Startup</option>
               <option value="restaurant">Restaurant</option>
             </select>
           </div>
+
           <div>
             <label className="block text-sm">Style</label>
-            <select value={style} onChange={(e)=>setStyle(e.target.value)} className="mt-1 p-2 border w-full rounded">
+            <select value={style} onChange={(e) => setStyle(e.target.value)} className="mt-1 p-2 border w-full rounded">
               <option value="modern">Modern</option>
               <option value="classic">Classic</option>
               <option value="futuristic">Futuristic</option>
             </select>
           </div>
+
           <div>
             <label className="block text-sm">Color palette</label>
-            <select value={palette} onChange={(e)=>setPalette(e.target.value)} className="mt-1 p-2 border w-full rounded">
+            <select value={palette} onChange={(e) => setPalette(e.target.value)} className="mt-1 p-2 border w-full rounded">
               <option value="pastel">Pastel</option>
               <option value="dark">Dark</option>
               <option value="vibrant">Vibrant</option>
             </select>
           </div>
+
           <div>
             <label className="block text-sm">Extra details</label>
-            <input value={extra} onChange={(e)=>setExtra(e.target.value)} placeholder="e.g., 3D artist, Bangalore" className="mt-1 p-2 border w-full rounded" />
+            <input value={extra} onChange={(e) => setExtra(e.target.value)} placeholder="e.g., 3D artist, Bangalore" className="mt-1 p-2 border w-full rounded" />
           </div>
         </div>
 
         <div className="mt-4 flex gap-3">
           <button onClick={handleGenerate} className="px-4 py-2 bg-sky-600 text-white rounded">Generate</button>
-          <button onClick={handleSave} disabled={!aiHtml || saving} className="px-4 py-2 bg-green-600 text-white rounded">{saving ? 'Saving...' : 'Save Site'}</button>
+          <button onClick={handleSave} disabled={!aiHtml || saving} className="px-4 py-2 bg-green-600 text-white rounded">{saving ? "Saving..." : "Save Site"}</button>
         </div>
+
+        {!user && !loadingSession && (
+          <p className="mt-3 text-sm text-gray-600">You were redirected to login — please sign in to save.</p>
+        )}
       </div>
 
       <div className="card">
